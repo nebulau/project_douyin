@@ -29,6 +29,7 @@ import com.example.myapplication.base.BaseViewHolder;
 import com.example.myapplication.bean.Feed;
 import com.example.myapplication.bean.FeedResponse;
 import com.example.myapplication.network.IMiniDouyinService;
+import com.example.myapplication.network.NetCheckUtil;
 import com.example.myapplication.widget.MyVideoPlayer;
 
 import java.io.IOException;
@@ -61,7 +62,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void initView() {
-        new FetchTask().execute(URL);
+//        if (NetCheckUtil.checkNet(getContext())) {
+            new FetchTask().execute(URL);
+//        } else {
+//            Toast.makeText(getActivity(), "没有网络连接", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     private class FetchTask extends AsyncTask<String, Void, FeedResponse> {
