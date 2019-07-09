@@ -6,7 +6,10 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.widget.Toast;
 
+import com.example.myapplication.base.BaseAtyContainer;
 import com.example.myapplication.fragment.ChatListFragment;
 import com.example.myapplication.fragment.HomeFragment;
 import com.example.myapplication.fragment.RecordUploadFragment;
@@ -60,5 +63,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         tabLayout.setupWithViewPager(pager);
+
+        BaseAtyContainer.getInstance().addActivity(this);
+    }
+
+    private long exitTime = 0;
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){
+            if((System.currentTimeMillis()-exitTime) > 2000){
+                Toast.makeText(getApplicationContext(), "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+            } else {
+                BaseAtyContainer.getInstance().finishAllActivity();
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BaseAtyContainer.getInstance().removeActivity(this);
     }
 }

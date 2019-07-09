@@ -54,7 +54,7 @@ public class HomeFragment extends Fragment {
         view = inflater.inflate(R.layout.home_fragment, container, false);
         rvVideos = view.findViewById(R.id.rv_videos);
         ButterKnife.bind(getActivity());
-        initView();
+//        initView();
         addListener();
 
         return view;
@@ -162,7 +162,7 @@ public class HomeFragment extends Fragment {
             if (position == 0) {
                 holder.mp_video.startVideo();
             }
-            Glide.with(context).load(bean).into(holder.mp_video.thumbImageView);
+            Glide.with(context).load(mFeeds.get(position).getImage_url()).into(holder.mp_video.thumbImageView);
             holder.video_title.setText("第" + position + "个视频");
         }
 
@@ -213,6 +213,8 @@ public class HomeFragment extends Fragment {
         super.setUserVisibleHint(isVisibleToUser);
         if (!isVisibleToUser) {
             JZVideoPlayer.releaseAllVideos();
+        } else {
+            initView();
         }
     }
 

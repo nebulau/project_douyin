@@ -3,6 +3,8 @@ package com.example.myapplication.fragment;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -31,6 +33,7 @@ import com.example.myapplication.network.IMiniDouyinService;
 import com.example.myapplication.utils.ResourceUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -49,6 +52,7 @@ import static android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT;
 import static com.example.myapplication.utils.Utils.MEDIA_TYPE_IMAGE;
 import static com.example.myapplication.utils.Utils.MEDIA_TYPE_VIDEO;
 import static com.example.myapplication.utils.Utils.getOutputMediaFile;
+import static com.example.myapplication.utils.Utils.rotateImage;
 
 public class RecordUploadFragment extends Fragment {
     public static final String TAG = "RecordUploadFragment: ";
@@ -171,11 +175,14 @@ public class RecordUploadFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if (selectStatus == 0) {
+                    Toast.makeText(getActivity(), "先选择一张图片然后再点击", Toast.LENGTH_SHORT).show();
                     chooseImage();
                 } else if (selectStatus == 1) {
+                    Toast.makeText(getActivity(), "再选择一段视频然后再点击", Toast.LENGTH_SHORT).show();
                     chooseVideo();
                 } else if (selectStatus == 2) {
                     if (mSelectedVideo != null && mSelectedImage != null) {
+                        Toast.makeText(getActivity(), "正在上传请稍等", Toast.LENGTH_SHORT).show();
                         postVideo();
                         selectStatus = 3;
                     } else {
@@ -204,6 +211,10 @@ public class RecordUploadFragment extends Fragment {
         return cam;
     }
 
+    private void prepareCamera() {
+        mCamera = getCamera(CAMERA_TYPE);
+    }
+
     private void releaseCameraAndPreview() {
         //todo 释放camera资源
         if (mCamera != null) {
@@ -217,20 +228,22 @@ public class RecordUploadFragment extends Fragment {
     Camera.Size size;
 
     private void startPreview(SurfaceHolder holder) {
-        int width = mSurfaceView.getWidth();
-        int height = mSurfaceView.getHeight();
-        Camera.Parameters parameters = mCamera.getParameters();
-        Camera.Size size = getOptimalPreviewSize(parameters.getSupportedPictureSizes(), width, height);
+        if (mCamera != null) {
+            int width = mSurfaceView.getWidth();
+            int height = mSurfaceView.getHeight();
+            Camera.Parameters parameters = mCamera.getParameters();
+            Camera.Size size = getOptimalPreviewSize(parameters.getSupportedPictureSizes(), width, height);
 
-        parameters.setPictureSize(size.width, size.height);
-        mCamera.setParameters(parameters);
+            parameters.setPictureSize(size.width, size.height);
+            mCamera.setParameters(parameters);
 
-        //todo 开始预览
-        try {
-            mCamera.setPreviewDisplay(holder);
-            mCamera.startPreview();
-        } catch (IOException e) {
-            e.printStackTrace();
+            //todo 开始预览
+            try {
+                mCamera.setPreviewDisplay(holder);
+                mCamera.startPreview();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -299,6 +312,15 @@ public class RecordUploadFragment extends Fragment {
             FileOutputStream fos = new FileOutputStream(pictureFile);
             fos.write(data);
             fos.close();
+//            //改变角度
+//            FileInputStream fis = new FileInputStream(pictureFile);
+//            Bitmap bitmap = rotateImage(BitmapFactory.decodeStream(fis), pictureFile.getAbsolutePath());
+            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            Bitmap newBitmap = rotateImage(bitmap, pictureFile.getAbsolutePath());
+            FileOutputStream fos1 = new FileOutputStream(pictureFile);
+            newBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos1);
+            fos1.flush();
+            fos1.close();
         } catch (IOException e) {
             Log.d("mPicture", "Error accessing file: " + e.getMessage());
         }
@@ -445,10 +467,10 @@ public class RecordUploadFragment extends Fragment {
          */
         protected void onPostExecute(PostVideoResponse response) {
             if (response.isSuccess()) {
-                Toast.makeText(getActivity(), "upload suceesfully!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "上传成功!", Toast.LENGTH_SHORT).show();
                 selectStatus = 3;//上传成功
             } else {
-                Toast.makeText(getActivity(), "upload fails", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "上传失败", Toast.LENGTH_SHORT).show();
                 selectStatus = 2;
             }
         }
@@ -476,13 +498,38 @@ public class RecordUploadFragment extends Fragment {
     public void onPause() {
         super.onPause();
         Log.d(TAG, "onPause: ");
+        releaseCameraAndPreview();
+        releaseMediaRecorder();
     }
 
     @Override
     public void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
+        releaseCameraAndPreview();
+        releaseMediaRecorder();
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            prepareCamera();
+            if (mHolder != null) {
+                startPreview(mHolder);
+            }
+        } else {
+            releaseCameraAndPreview();
+            releaseMediaRecorder();
+        }
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        prepareCamera();
+        if (mHolder != null) {
+            startPreview(mHolder);
+        }
+    }
 }

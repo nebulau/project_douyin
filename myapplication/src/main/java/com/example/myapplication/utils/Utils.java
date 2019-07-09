@@ -130,7 +130,7 @@ public class Utils {
     private static final int NUM_180 = 180;
     private static final int NUM_270 = 270;
 
-    public static  Bitmap rotateImage(Bitmap bitmap, String path) {
+    public static Bitmap rotateImage(Bitmap bitmap, String path) {
         ExifInterface srcExif = null;
         try {
             srcExif = new ExifInterface(path);
@@ -154,7 +154,7 @@ public class Utils {
             default:
                 break;
         }
-        matrix.postRotate(angle);
+        matrix.postRotate(90);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 }

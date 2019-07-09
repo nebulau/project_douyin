@@ -7,6 +7,9 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
+import com.example.myapplication.base.BaseAtyContainer;
+
+
 public class PreActivity extends AppCompatActivity {
     private Handler handler;
 
@@ -23,6 +26,7 @@ public class PreActivity extends AppCompatActivity {
                 goHomePage();
             }
         }, 1000);
+        BaseAtyContainer.getInstance().addActivity(this);
     }
 
     public void goHomePage() {
@@ -33,6 +37,7 @@ public class PreActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacksAndMessages(null);
+        BaseAtyContainer.getInstance().removeActivity(this);
     }
 
     @Override
