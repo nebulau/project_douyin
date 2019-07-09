@@ -38,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -68,6 +69,7 @@ public class RecordUploadFragment extends Fragment {
 
     private int rotationDegree = 0;
     private Timer timer;
+    private Camera.AutoFocusCallback myAutoFocusCallback = null;
     private final static int REQUEST_PERMISSION = 123;
     public Uri mSelectedImage;
     private Uri mSelectedVideo;
@@ -106,6 +108,8 @@ public class RecordUploadFragment extends Fragment {
             }
         });
 
+//        timer = new Timer();
+//        timer.schedule(new startFocus(),0,800);
 
         view.findViewById(R.id.take_photo).setOnClickListener(v -> {
             //todo 拍一张照片
@@ -220,6 +224,18 @@ public class RecordUploadFragment extends Fragment {
                 }
             }
         });
+
+        myAutoFocusCallback = new Camera.AutoFocusCallback() {
+            public void onAutoFocus(boolean success, Camera
+                    camera) {
+                if (success)//success表示对焦成功
+                {
+                    Log.i("Warning", "myAutoFocusCallback: success...");
+                } else {
+                    Log.i("warning", "myAutoFocusCallback: 失败了...");
+                }
+            }
+        };
 
         return view;
     }
@@ -561,6 +577,7 @@ public class RecordUploadFragment extends Fragment {
         Log.d(TAG, "onStop: ");
         releaseCameraAndPreview();
         releaseMediaRecorder();
+//        timer.cancel();
     }
 
     @Override
@@ -585,4 +602,5 @@ public class RecordUploadFragment extends Fragment {
             startPreview(mHolder);
         }
     }
+
 }
