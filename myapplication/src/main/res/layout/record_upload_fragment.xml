@@ -13,16 +13,20 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="20dp"
-        android:gravity="right">
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/light_status"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/light_off" />
+
         <ImageView
             android:id="@+id/reverse_camera"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_marginRight="10dp"
-            app:srcCompat="@mipmap/reverse"/>
+            android:layout_weight="1"
+            app:srcCompat="@mipmap/reverse" />
 
     </LinearLayout>
 

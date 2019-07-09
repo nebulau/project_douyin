@@ -27,13 +27,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.myapplication.PhotoShow;
 import com.example.myapplication.R;
 import com.example.myapplication.bean.PostVideoResponse;
 import com.example.myapplication.network.IMiniDouyinService;
 import com.example.myapplication.utils.ResourceUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -64,6 +64,7 @@ public class RecordUploadFragment extends Fragment {
     private int CAMERA_TYPE = Camera.CameraInfo.CAMERA_FACING_BACK;
 
     private boolean isRecording = false;
+    private boolean lightCanOn = false;
 
     private int rotationDegree = 0;
     private Timer timer;
@@ -108,7 +109,13 @@ public class RecordUploadFragment extends Fragment {
 
         view.findViewById(R.id.take_photo).setOnClickListener(v -> {
             //todo 拍一张照片
+            if (lightCanOn) {
+                turnLightOn();
+            }
             mCamera.takePicture(null, null, mPicture);
+            if (lightCanOn) {
+                turnLightOff();
+            }
             Toast.makeText(getActivity(), "已保存", Toast.LENGTH_SHORT).show();
         });
 
@@ -194,7 +201,49 @@ public class RecordUploadFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.light_status).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (lightCanOn) {
+                    //todo打开灯
+
+
+                    ImageView imageView = view.findViewById(R.id.light_status);
+                    imageView.setImageDrawable(getResources().getDrawable(R.drawable.light_off));
+                    lightCanOn = false;
+                } else {
+
+
+                    ImageView imageView = view.findViewById(R.id.light_status);
+                    imageView.setImageDrawable(getResources().getDrawable(R.drawable.light_on));
+                    lightCanOn = true;
+                }
+            }
+        });
+
         return view;
+    }
+
+    private void turnLightOn() {
+        try {
+            Camera.Parameters parameters = mCamera.getParameters();
+            parameters = mCamera.getParameters();
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            mCamera.setParameters(parameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void turnLightOff() {
+        try {
+            Camera.Parameters parameters = mCamera.getParameters();
+            parameters = mCamera.getParameters();
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            mCamera.setParameters(parameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Camera getCamera(int position) {
@@ -324,6 +373,10 @@ public class RecordUploadFragment extends Fragment {
         } catch (IOException e) {
             Log.d("mPicture", "Error accessing file: " + e.getMessage());
         }
+        Intent intent = new Intent();
+        intent.setClass(getActivity(), PhotoShow.class);
+        intent.putExtra("path", pictureFile.getAbsolutePath());
+        startActivity(intent);
 
         mCamera.startPreview();
     };
